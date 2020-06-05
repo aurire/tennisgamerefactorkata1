@@ -82,11 +82,24 @@ class TennisGame1 implements TennisGame
     }
 
     /**
+     * @param int $currentMax
+     * @return bool
+     */
+    public function isFinalStage(int $currentMax): bool
+    {
+        return $currentMax >= 4;
+    }
+
+    /**
      * @param int $winnerNumber
      * @return string
      */
-    public function getScoreInAdvantageDeuceOrWinStageByWinnerNumber(int $winnerNumber): string
+    public function getScoreInFinalStageByWinnerNumber(int $winnerNumber): string
     {
+        if (static::WINNER_NONE_OR_DRAW === $winnerNumber) {
+            return self::SCORE_DEUCE;
+        }
+
         $difference = $this->playerScore1 - $this->playerScore2;
         if (1 === $difference || -1 === $difference) {
             return 'Advantage ' . $this->getPlayerName($winnerNumber);
@@ -102,15 +115,13 @@ class TennisGame1 implements TennisGame
     {
         $max = $this->getMaxScore();
         $winnerNumber = $this->getWinnerPlayerNumber();
-        if ($max < 4) {
-            return static::WINNER_NONE_OR_DRAW === $winnerNumber
-                ? $this->getScoreOnDrawByCurrentMaxScore($max)
-                : static::SCORE_NAMES[$this->playerScore1] . '-' . static::SCORE_NAMES[$this->playerScore2];
-        }
-        if (static::WINNER_NONE_OR_DRAW === $winnerNumber) {
-            return self::SCORE_DEUCE;
+        if ($this->isFinalStage()) {
+            return $this->getScoreInFinalStageByWinnerNumber($winnerNumber);
         }
 
-        return $this->getScoreInAdvantageDeuceOrWinStageByWinnerNumber($winnerNumber);
+        return static::WINNER_NONE_OR_DRAW === $winnerNumber
+            ? $this->getScoreOnDrawByCurrentMaxScore($max)
+            : static::SCORE_NAMES[$this->playerScore1] . '-' . static::SCORE_NAMES[$this->playerScore2];
+
     }
 }
