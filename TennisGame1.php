@@ -115,7 +115,7 @@ class TennisGame1 implements TennisGame
     {
         $max = $this->getMaxScore();
         $winnerNumber = $this->getWinnerPlayerNumber();
-        if ($this->isFinalStage()) {
+        if ($this->isFinalStage($max)) {
             return $this->getScoreInFinalStageByWinnerNumber($winnerNumber);
         }
 
