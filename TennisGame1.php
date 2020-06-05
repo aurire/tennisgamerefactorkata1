@@ -12,7 +12,7 @@ class TennisGame1 implements TennisGame
         3 => 'Forty',
     ];
     const SCORE_DEUCE = 'Deuce';
-    const ID_PLAYER_1 = 'player1';
+    const WINNER_NONE_OR_DRAW = 0;
 
     private $playerScore1 = 0;
     private $playerScore2 = 0;
@@ -35,7 +35,7 @@ class TennisGame1 implements TennisGame
      */
     public function wonPoint($playerName)
     {
-        if (self::ID_PLAYER_1 == $playerName) {
+        if ($this->player1Name === $playerName) {
             $this->playerScore1++;
         } else {
             $this->playerScore2++;
@@ -43,31 +43,74 @@ class TennisGame1 implements TennisGame
     }
 
     /**
+     * @param int $playerNumber
+     * @return string
+     */
+    public function getPlayerName(int $playerNumber): string
+    {
+        return 1 === $playerNumber ? $this->player1Name : $this->player2Name;
+    }
+
+    /**
+     * @return int
+     */
+    public function getWinnerPlayerNumber(): int
+    {
+        return $this->playerScore1 === $this->playerScore2 ? 0 : ($this->playerScore1 > $this->playerScore2 ? 1 : 2);
+    }
+
+    /**
+     * @return int
+     */
+    public function getMaxScore(): int
+    {
+        return $this->playerScore1 > $this->playerScore2 ? $this->playerScore1 : $this->playerScore2;
+    }
+
+    /**
+     * @param int $currentMax
+     * @return string
+     */
+    public function getScoreOnDrawByCurrentMaxScore(int $currentMax): string
+    {
+        if (3 === $currentMax) {
+            return self::SCORE_DEUCE;
+        }
+
+        return static::SCORE_NAMES[$currentMax] . '-All';
+
+    }
+
+    /**
+     * @param int $winnerNumber
+     * @return string
+     */
+    public function getScoreInAdvantageDeuceOrWinStageByWinnerNumber(int $winnerNumber): string
+    {
+        $difference = $this->playerScore1 - $this->playerScore2;
+        if (1 === $difference || -1 === $difference) {
+            return 'Advantage ' . $this->getPlayerName($winnerNumber);
+        }
+
+        return 'Win for ' . $this->getPlayerName($winnerNumber);
+    }
+
+    /**
      * @return string
      */
     public function getScore()
     {
-        $max = $this->playerScore1 > $this->playerScore2 ? $this->playerScore1 : $this->playerScore2;
-        $wins = $this->playerScore1 === $this->playerScore2 ? 0 : ($this->playerScore1 > $this->playerScore2 ? 1 : 2);
+        $max = $this->getMaxScore();
+        $winnerNumber = $this->getWinnerPlayerNumber();
         if ($max < 4) {
-            if (0 === $wins) {
-                if (3 === $max) {
-                    return self::SCORE_DEUCE;
-                } else {
-                    return static::SCORE_NAMES[$max] . '-All';
-                }
-            } else {
-                return static::SCORE_NAMES[$this->playerScore1] . '-' . static::SCORE_NAMES[$this->playerScore2];
-            }
+            return static::WINNER_NONE_OR_DRAW === $winnerNumber
+                ? $this->getScoreOnDrawByCurrentMaxScore($max)
+                : static::SCORE_NAMES[$this->playerScore1] . '-' . static::SCORE_NAMES[$this->playerScore2];
         }
-        if (0 === $wins) {
+        if (static::WINNER_NONE_OR_DRAW === $winnerNumber) {
             return self::SCORE_DEUCE;
         }
-        $difference = abs($this->playerScore1 - $this->playerScore2);
-        if ($difference > 1) {
-            return 'Win for player' . $wins;
-        }
 
-        return 'Advantage player' . $wins;
+        return $this->getScoreInAdvantageDeuceOrWinStageByWinnerNumber($winnerNumber);
     }
 }
